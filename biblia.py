@@ -1,88 +1,66 @@
 import streamlit as st
-from datetime import datetime
 
 # 1. CONFIGURACIÓN DE PÁGINA
-st.set_page_config(page_title="Biblia Digital Pro", page_icon="📖", layout="centered")
+st.set_page_config(page_title="Biblia Digital", page_icon="📖", layout="centered")
 
-# 2. BASE DE DATOS LOCAL (Ejemplo de funcionamiento real)
-# Aquí puedes ir pegando los textos de cada capítulo
-TEXTOS_BIBLIA = {
-    "Génesis": {
-        1: ["En el principio creó Dios los cielos y la tierra.", 
-            "Y la tierra estaba desordenada y vacía, y las tinieblas estaban sobre la faz del abismo.",
-            "Y dijo Dios: Sea la luz; y fue la luz."]
-    },
+# 2. BASE DE DATOS INTEGRADA (Textos reales RVR1960)
+# Esta estructura permite que la app funcione sin archivos externos
+BIBLIA_LOCAL = {
     "Salmos": {
-        23: ["Jehová es mi pastor; nada me faltará.",
-             "En lugares de delicados pastos me hará descansar.",
-             "Junto a aguas de reposo me pastoreará."]
+        23: ["Jehová es mi pastor; nada me faltará.", "En lugares de delicados pastos me hará descansar; Junto a aguas de reposo me pastoreará.", "Confortará mi alma; Me guiará por sendas de justicia por amor de su nombre."],
+        91: ["El que habita al abrigo del Altísimo Morará bajo la sombra del Omnipotente.", "Diré yo a Jehová: Esperanza mía, y castillo mío; Mi Dios, en quien confiaré.", "Él te librará del lazo del cazador, De la peste destructora."],
+        121: ["Alzaré mis ojos a los montes; ¿De dónde vendrá mi socorro?", "Mi socorro viene de Jehová, Que hizo los cielos y la tierra.", "No dará tu pie al resbaladero, Ni se dormirá el que te guarda."]
     },
     "Juan": {
-        1: ["En el principio era el Verbo, y el Verbo era con Dios, y el Verbo era Dios.",
-            "Este era en el principio con Dios.",
-            "Todas las cosas por él fueron hechas, y sin él nada de lo que ha sido hecho, fue hecho."]
+        1: ["En el principio era el Verbo, y el Verbo era con Dios, y el Verbo era Dios.", "Este era en el principio con Dios.", "Todas las cosas por él fueron hechas, y sin él nada de lo que ha sido hecho, fue hecho.", "En él estaba la vida, y la vida era la luz de los hombres."],
+        3: ["Había un hombre de los fariseos que se llamaba Nicodemo, un principal entre los judíos.", "Este vino a Jesús de noche, y le dijo: Rabí, sabemos que has venido de Dios como maestro...", "Porque de tal manera amó Dios al mundo, que ha dado a su Hijo unigénito..."]
     }
 }
 
-# 3. ESTILO VISUAL PROFESIONAL
+# 3. ESTILO VISUAL
 st.markdown("""
     <style>
-    .stApp { background-color: #f4f7f6; }
-    .biblia-box { 
+    .texto-biblico { 
         font-family: 'Georgia', serif; font-size: 1.3rem; line-height: 1.8; 
-        color: #1a1a1a; padding: 30px; background-color: white; 
-        border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-        border-top: 5px solid #2c3e50;
+        color: #1a1a1a; padding: 25px; background-color: white; 
+        border-radius: 12px; box-shadow: 0 4px 10px rgba(0,0,0,0.05);
+        border-left: 5px dotted #2c3e50;
     }
     .v-num { color: #8e44ad; font-weight: bold; font-size: 0.9rem; margin-right: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
-# 4. ENCABEZADO
-st.title("📖 Biblia Reina Valera 1960")
-st.caption("Lectura Sistematizada y Simplificada")
+st.title("📖 Biblia Sistematizada")
 
-# 5. SELECTORES DE NAVEGACIÓN
-libros_disponibles = [
-    "Génesis", "Éxodo", "Levítico", "Números", "Deuteronomio", "Salmos", "Proverbios", 
-    "Mateo", "Marcos", "Lucas", "Juan", "Hechos", "Romanos", "Apocalipsis"
-]
-
+# 4. SELECTORES
+libros_disp = ["Salmos", "Juan", "Génesis", "Mateo", "Romanos", "Apocalipsis"]
 col1, col2 = st.columns([2, 1])
+
 with col1:
-    libro_sel = st.selectbox("📖 Libro", libros_disponibles)
+    libro_sel = st.selectbox("Libro", libros_disp)
 with col2:
-    cap_sel = st.number_input("Capítulo", min_value=1, value=1 if libro_sel != "Salmos" else 23)
+    # Ajustamos capítulos según lo que tenemos cargado
+    caps_lista = list(BIBLIA_LOCAL.get(libro_sel, {1: []}).keys())
+    cap_sel = st.selectbox("Cap.", caps_lista if caps_lista else [1])
 
 st.divider()
 
-# 6. LÓGICA DE VISUALIZACIÓN
+# 5. MOSTRAR TEXTO
 st.subheader(f"{libro_sel} {cap_sel}")
 
-# Verificamos si tenemos el texto en nuestra base de datos
-if libro_sel in TEXTOS_BIBLIA and cap_sel in TEXTOS_BIBLIA[libro_sel]:
-    versiculos = TEXTOS_BIBLIA[libro_sel][cap_sel]
-    
-    contenido_html = "<div class='biblia-box'>"
+if libro_sel in BIBLIA_LOCAL and cap_sel in BIBLIA_LOCAL[libro_sel]:
+    versiculos = BIBLIA_LOCAL[libro_sel][cap_sel]
+    html = "<div class='texto-biblico'>"
     for i, texto in enumerate(versiculos):
-        contenido_html += f"<span class='v-num'>{i+1}</span> {texto}<br><br>"
-    contenido_html += "</div>"
-    
-    st.markdown(contenido_html, unsafe_allow_html=True)
+        html += f"<span class='v-num'>{i+1}</span> {texto}<br><br>"
+    html += "</div>"
+    st.markdown(html, unsafe_allow_html=True)
 else:
-    # Mensaje si el capítulo aún no está cargado en el código
-    st.info(f"El texto de {libro_sel} {cap_sel} está siendo procesado para la versión digital.")
-    st.markdown("""
-    <div class='biblia-box'>
-        <span class='v-num'>1</span> [Texto en preparación para la lectura sistematizada...]
-    </div>
-    """, unsafe_allow_html=True)
+    st.info(f"El texto de {libro_sel} {cap_sel} está disponible en la versión impresa. Pronto lo sincronizaremos aquí.")
+    st.image("https://images.unsplash.com", caption="Escudriñad las Escrituras")
 
-# 7. BARRA LATERAL
-st.sidebar.header("🔍 Herramientas")
-st.sidebar.write("📌 **Versículo de hoy:**")
-st.sidebar.warning("'Todo lo puedo en Cristo que me fortalece.' - Filipenses 4:13")
-
-# Pie de página
-st.markdown("---")
-st.markdown(f"<center><small>© {datetime.now().year} Biblia Digital Sistematizada</small></center>", unsafe_allow_html=True)
+# 6. BARRA LATERAL
+st.sidebar.header("🔍 Navegación")
+st.sidebar.write("📌 **Sugerencias de hoy:**")
+st.sidebar.button("Leer Salmo 23", on_click=lambda: st.toast("Cargando Salmo 23..."))
+st.sidebar.button("Leer Juan 3", on_click=lambda: st.toast("Cargando Juan 3..."))

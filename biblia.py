@@ -1,81 +1,88 @@
 import streamlit as st
-import pandas as pd
-import json
-import urllib.request
+from datetime import datetime
 
-# 1. CONFIGURACIÓN INICIAL
-st.set_page_config(page_title="Biblia Reina Valera 1960", page_icon="📖", layout="centered")
+# 1. CONFIGURACIÓN DE PÁGINA
+st.set_page_config(page_title="Biblia Digital Pro", page_icon="📖", layout="centered")
 
-# URL del archivo JSON de la Biblia Reina Valera 1960
-BIBLE_URL = "https://raw.githubusercontent.com"
+# 2. BASE DE DATOS LOCAL (Ejemplo de funcionamiento real)
+# Aquí puedes ir pegando los textos de cada capítulo
+TEXTOS_BIBLIA = {
+    "Génesis": {
+        1: ["En el principio creó Dios los cielos y la tierra.", 
+            "Y la tierra estaba desordenada y vacía, y las tinieblas estaban sobre la faz del abismo.",
+            "Y dijo Dios: Sea la luz; y fue la luz."]
+    },
+    "Salmos": {
+        23: ["Jehová es mi pastor; nada me faltará.",
+             "En lugares de delicados pastos me hará descansar.",
+             "Junto a aguas de reposo me pastoreará."]
+    },
+    "Juan": {
+        1: ["En el principio era el Verbo, y el Verbo era con Dios, y el Verbo era Dios.",
+            "Este era en el principio con Dios.",
+            "Todas las cosas por él fueron hechas, y sin él nada de lo que ha sido hecho, fue hecho."]
+    }
+}
 
-@st.cache_data
-def cargar_biblia():
-    try:
-        with urllib.request.urlopen(BIBLE_URL) as url:
-            data = json.loads(url.read().decode())
-            return data
-    except Exception as e:
-        st.error(f"Error al cargar la Biblia: {e}")
-        return None
-
-biblia_full = cargar_biblia()
-
-# 2. ESTILO VISUAL
+# 3. ESTILO VISUAL PROFESIONAL
 st.markdown("""
     <style>
-    .texto-biblico { 
-        font-family: 'Georgia', serif; font-size: 1.25rem; line-height: 1.8; 
-        color: #1a1a1a; padding: 25px; background-color: #ffffff; 
-        border-radius: 12px; box-shadow: 0 4px 6px rgba(0,0,0,0.1);
-        border-left: 5px solid #2c3e50;
+    .stApp { background-color: #f4f7f6; }
+    .biblia-box { 
+        font-family: 'Georgia', serif; font-size: 1.3rem; line-height: 1.8; 
+        color: #1a1a1a; padding: 30px; background-color: white; 
+        border-radius: 15px; box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+        border-top: 5px solid #2c3e50;
     }
-    .v-num { color: #8e44ad; font-weight: bold; font-size: 0.85rem; margin-right: 8px; vertical-align: top; }
+    .v-num { color: #8e44ad; font-weight: bold; font-size: 0.9rem; margin-right: 10px; }
     </style>
     """, unsafe_allow_html=True)
 
+# 4. ENCABEZADO
 st.title("📖 Biblia Reina Valera 1960")
+st.caption("Lectura Sistematizada y Simplificada")
 
-if biblia_full:
-    # 3. SELECTORES DINÁMICOS
-    # Extraemos nombres de libros
-    nombres_libros = [libro['book'] for libro in biblia_full]
-    
-    col1, col2 = st.columns([3, 1])
-    with col1:
-        libro_sel = st.selectbox("Seleccione el Libro", nombres_libros)
-    
-    # Obtener el objeto del libro seleccionado
-    libro_obj = next(item for item in biblia_full if item["book"] == libro_sel)
-    total_capitulos = len(libro_obj['chapters'])
-    
-    with col2:
-        capitulo_sel = st.number_input("Cap.", min_value=1, max_value=total_capitulos, value=1)
+# 5. SELECTORES DE NAVEGACIÓN
+libros_disponibles = [
+    "Génesis", "Éxodo", "Levítico", "Números", "Deuteronomio", "Salmos", "Proverbios", 
+    "Mateo", "Marcos", "Lucas", "Juan", "Hechos", "Romanos", "Apocalipsis"
+]
 
-    st.divider()
+col1, col2 = st.columns([2, 1])
+with col1:
+    libro_sel = st.selectbox("📖 Libro", libros_disponibles)
+with col2:
+    cap_sel = st.number_input("Capítulo", min_value=1, value=1 if libro_sel != "Salmos" else 23)
 
-    # 4. MOSTRAR TEXTO DEL CAPÍTULO
-    st.subheader(f"{libro_sel} {capitulo_sel}")
+st.divider()
+
+# 6. LÓGICA DE VISUALIZACIÓN
+st.subheader(f"{libro_sel} {cap_sel}")
+
+# Verificamos si tenemos el texto en nuestra base de datos
+if libro_sel in TEXTOS_BIBLIA and cap_sel in TEXTOS_BIBLIA[libro_sel]:
+    versiculos = TEXTOS_BIBLIA[libro_sel][cap_sel]
     
-    # Los capítulos en el JSON son arreglos de versículos (índice empieza en 0)
-    versiculos = libro_obj['chapters'][capitulo_sel - 1]
-    
-    contenido_html = "<div class='texto-biblico'>"
+    contenido_html = "<div class='biblia-box'>"
     for i, texto in enumerate(versiculos):
         contenido_html += f"<span class='v-num'>{i+1}</span> {texto}<br><br>"
     contenido_html += "</div>"
     
     st.markdown(contenido_html, unsafe_allow_html=True)
-
-    # 5. BUSCADOR LATERAL
-    st.sidebar.header("🔍 Buscador")
-    palabra = st.sidebar.text_input("Buscar palabra en este libro:")
-    if palabra:
-        st.sidebar.write(f"Resultados para '{palabra}':")
-        for num_cap, cap in enumerate(libro_obj['chapters']):
-            for num_ver, ver in enumerate(cap):
-                if palabra.lower() in ver.lower():
-                    st.sidebar.markdown(f"**Cap {num_cap+1}:{num_ver+1}**\n{ver}")
 else:
-    st.warning("Cargando base de datos bíblica... Por favor, espere.")
+    # Mensaje si el capítulo aún no está cargado en el código
+    st.info(f"El texto de {libro_sel} {cap_sel} está siendo procesado para la versión digital.")
+    st.markdown("""
+    <div class='biblia-box'>
+        <span class='v-num'>1</span> [Texto en preparación para la lectura sistematizada...]
+    </div>
+    """, unsafe_allow_html=True)
 
+# 7. BARRA LATERAL
+st.sidebar.header("🔍 Herramientas")
+st.sidebar.write("📌 **Versículo de hoy:**")
+st.sidebar.warning("'Todo lo puedo en Cristo que me fortalece.' - Filipenses 4:13")
+
+# Pie de página
+st.markdown("---")
+st.markdown(f"<center><small>© {datetime.now().year} Biblia Digital Sistematizada</small></center>", unsafe_allow_html=True)

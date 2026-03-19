@@ -1,32 +1,29 @@
 import streamlit as st
 
-# 1. CONFIGURACIÓN DE LA PÁGINA (Debe ser la primera instrucción)
-st.set_page_config(page_title="Biblia Digital Pro", page_icon="📖", layout="centered")
+# 1. CONFIGURACIÓN (Debe ir al inicio)
+st.set_page_config(page_title="Biblia Digital", page_icon="📖", layout="centered")
 
-# 2. ESTILO VISUAL MINIMALISTA (CSS corregido)
+# 2. ESTILO CORREGIDO
 st.markdown("""
     <style>
-    .stApp { background-color: #f8f9fa; }
     .biblia-contenedor { 
         font-family: 'Georgia', serif; 
         font-size: 1.2rem; 
         line-height: 1.8; 
         color: #2c3e50; 
-        padding: 30px; 
+        padding: 20px; 
         background-color: white; 
-        border-radius: 15px; 
-        box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-        border: 1px solid #e1e4e8;
+        border-radius: 10px; 
+        border: 1px solid #ddd;
     }
-    .versiculo-num { color: #8e44ad; font-weight: bold; font-size: 0.9rem; vertical-align: super; margin-right: 5px; }
+    .v-num { color: #8e44ad; font-weight: bold; font-size: 0.8rem; margin-right: 5px; }
     </style>
     """, unsafe_allow_html=True)
 
-# 3. TÍTULO Y ENCABEZADO
+# 3. TÍTULO
 st.title("📖 Biblia Sistematizada")
-st.caption("Lectura simplificada • Reina Valera 1960")
 
-# 4. BASE DE DATOS DE LOS 66 LIBROS
+# 4. DATOS COMPLETOS
 biblia_data = {
     "Antiguo Testamento": [
         "Génesis", "Éxodo", "Levítico", "Números", "Deuteronomio", "Josué", "Jueces", "Rut", 
@@ -44,43 +41,26 @@ biblia_data = {
     ]
 }
 
-# 5. BUSCADOR SISTEMATIZADO
-with st.container():
-    col1, col2, col3 = st.columns([2, 2, 1])
-    
-    with col1:
-        testamento_sel = st.selectbox("Testamento", list(biblia_data.keys()))
-    with col2:
-        libro_sel = st.selectbox("Libro", biblia_data[testamento_sel])
-    with col3:
-        capitulo_sel = st.number_input("Cap.", min_value=1, value=1, step=1)
+# 5. BUSCADOR VERTICAL (Más estable para evitar distorsión)
+testamento_sel = st.selectbox("1. Elija el Testamento", list(biblia_data.keys()))
+libro_sel = st.selectbox("2. Elija el Libro", biblia_data[testamento_sel])
+capitulo_sel = st.number_input("3. Ingrese el Capítulo", min_value=1, value=1, step=1)
 
 st.divider()
 
-# 6. VISTA DEL PASAJE (Estructura para el texto)
+# 6. VISTA DEL PASAJE
 st.subheader(f"{libro_sel} {capitulo_sel}")
 
-# Nota: Aquí es donde conectaremos la base de datos real en el siguiente paso.
-with st.container():
-    st.markdown(f"""
-    <div class="biblia-contenedor">
-        <span class="versiculo-num">1</span> En el principio creó Dios los cielos y la tierra.<br>
-        <span class="versiculo-num">2</span> Y la tierra estaba desordenada y vacía, y las tinieblas estaban sobre la faz del abismo, y el Espíritu de Dios se movía sobre la faz de las aguas.<br>
-        <span class="versiculo-num">3</span> Y dijo Dios: Sea la luz; y fue la luz.
-    </div>
-    """, unsafe_allow_html=True)
+st.markdown(f"""
+<div class="biblia-contenedor">
+    <span class="v-num">1</span> En el principio creó Dios los cielos y la tierra.<br>
+    <span class="v-num">2</span> Y la tierra estaba desordenada y vacía, y las tinieblas estaban sobre la faz del abismo...<br>
+    <span class="v-num">3</span> Y dijo Dios: Sea la luz; y fue la luz.
+</div>
+""", unsafe_allow_html=True)
 
-# 7. BARRA LATERAL (Funciones adicionales)
+# 7. BARRA LATERAL
 st.sidebar.header("🔍 Herramientas")
-buscar_palabra = st.sidebar.text_input("Buscar por palabra clave:")
-
-if buscar_palabra:
-    st.sidebar.info(f"Buscando '{buscar_palabra}' en {libro_sel}...")
-
-st.sidebar.markdown("---")
-st.sidebar.write("✨ **Inspiración:**")
-st.sidebar.success("'Lámpara es a mis pies tu palabra, y lumbrera a mi camino.' - Salmos 119:105")
-
-# Pie de página
-st.markdown("---")
-st.markdown("<center><small>Desarrollado para estudio bíblico sistemático</small></center>", unsafe_allow_html=True)
+buscar = st.sidebar.text_input("Buscar palabra clave:")
+if buscar:
+    st.sidebar.info(f"Buscando '{buscar}'...")

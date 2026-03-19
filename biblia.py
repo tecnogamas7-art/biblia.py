@@ -1,29 +1,37 @@
 import streamlit as st
 
-# Configuración profesional
+# 1. Configuración de la página (DEBE SER LA PRIMERA LÍNEA DE STREAMLIT)
 st.set_page_config(page_title="Biblia Digital Pro", page_icon="📖", layout="centered")
 
-# Estilo visual minimalista
+# 2. Estilo visual corregido
 st.markdown("""
     <style>
     .main { background-color: #f5f5f5; }
-    .stSelectbox label { font-weight: bold; color: #2c3e50; }
-    .biblia-texto { font-family: 'Georgia', serif; font-size: 20px; line-height: 1.6; color: #1a1a1a; padding: 20px; background: white; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.05); }
+    .biblia-texto { 
+        font-family: 'Georgia', serif; 
+        font-size: 20px; 
+        line-height: 1.6; 
+        color: #1a1a1a; 
+        padding: 20px; 
+        background: white; 
+        border-radius: 10px; 
+        box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+    }
     </style>
-    """, unsafe_allow_view_config=True)
+    """, unsafe_allow_html=True)
 
 st.title("📖 Biblia Sistematizada")
 st.caption("Lectura simplificada y navegación rápida")
 
-# Estructura organizada de la Biblia
+# Estructura de la Biblia
 biblia_data = {
-    "Antiguo Testamento": ["Génesis", "Éxodo", "Levítico", "Números", "Deuteronomio", "Josué", "Jueces", "Rut", "1 Samuel", "2 Samuel", "Salmos", "Proverbios", "Isaías"],
-    "Nuevo Testamento": ["Mateo", "Marcos", "Lucas", "Juan", "Hechos", "Romanos", "1 Corintios", "Gálatas", "Efesios", "Filipenses", "Apocalipsis"]
+    "Antiguo Testamento": ["Génesis", "Éxodo", "Levítico", "Números", "Deuteronomio", "Salmos", "Proverbios"],
+    "Nuevo Testamento": ["Mateo", "Marcos", "Lucas", "Juan", "Hechos", "Romanos", "Apocalipsis"]
 }
 
 # --- BUSCADOR SISTEMATIZADO ---
 with st.container():
-    col1, col2, col3 = st.columns([2, 2, 1])
+    col1, col2, col3 = st.columns(3)
     
     with col1:
         testamento = st.selectbox("Testamento", list(biblia_data.keys()))
@@ -37,7 +45,6 @@ st.divider()
 # --- VISTA DEL PASAJE ---
 st.subheader(f"{libro} {capitulo}")
 
-# Simulación de texto (Aquí conectaremos la base de datos real luego)
 with st.container():
     st.markdown(f"""
     <div class="biblia-texto">
@@ -47,12 +54,11 @@ with st.container():
     </div>
     """, unsafe_allow_html=True)
 
-# --- BUSCADOR POR TEMAS ---
+# --- BARRA LATERAL ---
 st.sidebar.header("🔍 Buscador Rápido")
-tema = st.sidebar.text_input("Buscar por palabra (ej. Fe, Amor):")
-
+tema = st.sidebar.text_input("Buscar por palabra:")
 if tema:
-    st.sidebar.info(f"Buscando '{tema}' en toda la Biblia...")
+    st.sidebar.info(f"Buscando '{tema}'...")
 
 st.sidebar.markdown("---")
 st.sidebar.write("📌 **Versículo del día:**")
